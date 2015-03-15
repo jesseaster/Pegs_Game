@@ -92,7 +92,7 @@ class Node(object):
 		Returns:
 			Returns True if hole is False and jumpee and jumper are True.
 		"""
-		if self.data[hole]== False and self.data[jumpee] == True and self.data[jumper] == True:
+		if self.data[hole] == False and self.data[jumpee] == True and self.data[jumper] == True:
 			return True
 		else:
 			return False
@@ -142,9 +142,49 @@ class Node(object):
 			Returns True if one or more moves are made, else returns False.
 		"""
 		moves_made = False
-		for move_num in range(0, len(moves[hole])):
-			if self.attempt_move(hole, moves[hole][move_num][0], moves[hole][move_num][1]) == True:
+		for move_num in range(0, len(b.moves[hole])):
+			if self.attempt_move(hole, b.moves[hole][move_num][0], b.moves[hole][move_num][1]) == True:
 				moves_made = True
+		return moves_made
+
+	def check_if_win(self):
+		num_of_trues=0
+		for i in range(0, 15):
+			if self.data[i] == True:
+				num_of_trues += 1
+		if num_of_trues == 1:
+			b.set_win_found()
+
+	def is_win_possible(self):
+		b.reset_win_found()
+		self.attempt_moves_until_win()
+		if b.win_found == True:
+			return True
+		else:
+			return False
+
+	def attempt_moves_until_win(self):
+		"""
+		Attempt all moves for the game.
+
+		Go through each hole on the board and attempt to move all combinations of possible moves.
+			If a move is made, a child is created. Make a recursive call. This will run until all
+			possible ways for the game to end have been run.
+
+		Returns:
+			Returns True if moves are made, else returns False.
+		"""
+		self.check_if_win()
+		if b.win_found == True:
+			return False
+		moves_made = False
+		for hole in range(0, 15):
+			if self.data[hole] == False:
+				if self.attempt_moves(hole) == True:
+					moves_made = True
+		if moves_made == True:
+			for i in self.children:
+				i.attempt_moves_until_win()
 		return moves_made
 
 	def attempt_all_moves(self):
@@ -159,45 +199,68 @@ class Node(object):
 			Returns True if moves are made, else returns False.
 		"""
 		moves_made = False
-		for hole in range(0, len(self.data)):
-			if self.attempt_moves(hole) == True:
-				moves_made = True
+		for hole in range(0, 15):
+			if self.data[hole] == False:
+				if self.attempt_moves(hole) == True:
+					moves_made = True
 		if moves_made == True:
 			for i in self.children:
 				i.attempt_all_moves()
 		return moves_made
 
-##############################
-#
-#     Peg hole labels
-#           / \
-#          / 0 \
-#        / 1   2 \
-#      / 3   4   5 \
-#    / 6   7   8   9 \
-#  / 10 11  12  13  14 \
-# -----------------------
-#
-###############################
+class move():
+	def __init__(self):
+		##############################
+		#
+		#     Peg hole labels
+		#           / \
+		#          / 0 \
+		#        / 1   2 \
+		#      / 3   4   5 \
+		#    / 6   7   8   9 \
+		#  / 10 11  12  13  14 \
+		# -----------------------
+		#
+		###############################
 
-############# Define valid moves ######################
-moves = []
-moves.append([[ 1, 3],[ 2, 5]])					#peg 0
-moves.append([[ 3, 6],[ 4, 8]])					#peg 1
-moves.append([[ 4, 7],[ 5, 9]])					#peg 2
-moves.append([[ 1, 0],[ 4, 5],[ 6,10],[ 7,12]])	#peg 3
-moves.append([[ 7,11],[ 8,13]])					#peg 4
-moves.append([[ 2, 0],[ 4, 3],[ 8,12],[ 9,14]])	#peg 5
-moves.append([[ 3, 1],[ 7, 8]])					#peg 6
-moves.append([[ 4, 2],[ 8, 9]])					#peg 7
-moves.append([[ 4, 1],[ 7, 6]])					#peg 8
-moves.append([[ 5, 2],[ 8, 7]])					#peg 9
-moves.append([[ 6, 3],[11,12]])					#peg 10
-moves.append([[ 7, 4],[12,13]])					#peg 11
-moves.append([[ 7, 3],[ 8, 5],[11, 5],[13,14]])	#peg 12
-moves.append([[12,11],[ 8, 4]])					#peg 13
-moves.append([[ 9, 5],[13,12]])					#peg 14
+		############# Define valid moves ######################
+		self.moves = []
+		self.moves.append([[ 1, 3],[ 2, 5]])					#peg 0
+		self.moves.append([[ 3, 6],[ 4, 8]])					#peg 1
+		self.moves.append([[ 4, 7],[ 5, 9]])					#peg 2
+		self.moves.append([[ 1, 0],[ 4, 5],[ 6,10],[ 7,12]])	#peg 3
+		self.moves.append([[ 7,11],[ 8,13]])					#peg 4
+		self.moves.append([[ 2, 0],[ 4, 3],[ 8,12],[ 9,14]])	#peg 5
+		self.moves.append([[ 3, 1],[ 7, 8]])					#peg 6
+		self.moves.append([[ 4, 2],[ 8, 9]])					#peg 7
+		self.moves.append([[ 4, 1],[ 7, 6]])					#peg 8
+		self.moves.append([[ 5, 2],[ 8, 7]])					#peg 9
+		self.moves.append([[ 6, 3],[11,12]])					#peg 10
+		self.moves.append([[ 7, 4],[12,13]])					#peg 11
+		self.moves.append([[ 7, 3],[ 8, 5],[11, 10],[13,14]])	#peg 12
+		self.moves.append([[12,11],[ 8, 4]])					#peg 13
+		self.moves.append([[ 9, 5],[13,12]])					#peg 14
+		self.win_found = False
 
+	def reset_win_found(self):
+		self.win_found = False
+
+	def set_win_found(self):
+		self.win_found = True
+
+	def get_jumpee(self, node, hole, jumper):
+		for i in range(0 ,len(self.moves[hole])):
+			if self.moves[hole][i][1] == jumper:
+				jumpee = self.moves[hole][i][0]
+				return jumpee
+		return False
+
+	def check_clicked_move(self, node, hole, jumper):
+		for i in range(0 ,len(self.moves[hole])):
+			if self.moves[hole][i][1] == jumper:
+				jumpee = self.moves[hole][i][0]
+				return node.check_valid_move(hole, jumpee, jumper)
+		return False
 
 ### create starting peg pattern ###
 pegs = []
@@ -208,8 +271,10 @@ for i in range(0, 14):
 
 a = Node(pegs)
 
+b = move()
 # Build the tree diagram
-a.attempt_all_moves()
+#a.attempt_all_moves()
+#a.attempt_moves(1)
 
 # Print all leaves that end in a win
-a.print_winners()
+#a.print_tree()
